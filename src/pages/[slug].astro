@@ -1,3 +1,4 @@
+---
 import { supabase } from '../lib/supabase';
 import Anotador from '../components/Anotador.astro';
 
@@ -16,8 +17,11 @@ export async function getStaticPaths() {
     props: { note }
   }));
 }
+---
 
-const { note } = Astro.props;
+<script>
+  const { note } = Astro.props;
+</script>
 
 <html lang="es">
   <head>
@@ -30,4 +34,4 @@ const { note } = Astro.props;
     <div>{note.content}</div>
     <Anotador note={note} />
   </body>
-</html> 
+</html>

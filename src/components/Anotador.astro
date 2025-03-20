@@ -1,3 +1,4 @@
+---
 import { supabase } from '../lib/supabase';
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 }
 
 const { note } = Astro.props;
+---
 
 <div>
   <button id="new-note-btn">Nueva Nota</button>
@@ -91,4 +93,4 @@ const { note } = Astro.props;
       alert('Error al guardar la nota');
     }
   });
-</script> 
+</script>
