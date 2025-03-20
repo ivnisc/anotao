@@ -1,0 +1,33 @@
+import { supabase } from '../lib/supabase';
+import Anotador from '../components/Anotador.astro';
+
+export async function getStaticPaths() {
+  const { data: notes, error } = await supabase
+    .from('notes')
+    .select('*');
+
+  if (error) {
+    console.error('Error al cargar las notas:', error);
+    return [];
+  }
+
+  return notes.map(note => ({
+    params: { slug: note.slug },
+    props: { note }
+  }));
+}
+
+const { note } = Astro.props;
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{note.title}</title>
+  </head>
+  <body>
+    <h1>{note.title}</h1>
+    <div>{note.content}</div>
+    <Anotador note={note} />
+  </body>
+</html> 

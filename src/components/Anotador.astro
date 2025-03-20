@@ -1,0 +1,94 @@
+import { supabase } from '../lib/supabase';
+
+interface Props {
+  note?: {
+    id: number;
+    title: string;
+    content: string | null;
+    slug: string;
+  };
+}
+
+const { note } = Astro.props;
+
+<div>
+  <button id="new-note-btn">Nueva Nota</button>
+
+  <form id="note-form" style="display: none;">
+    <div>
+      <label for="title">Título</label>
+      <input
+        type="text"
+        id="title"
+        name="title"
+        value={note?.title || 'Untitled'}
+        required
+      />
+    </div>
+
+    <div>
+      <label for="content">Contenido</label>
+      <textarea
+        id="content"
+        name="content"
+        rows="10"
+        required
+      >
+        {note?.content || ''}
+      </textarea>
+    </div>
+
+    <button type="submit">
+      {note ? 'Actualizar' : 'Guardar'} Nota
+    </button>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('note-form') as HTMLFormElement;
+  const newNoteBtn = document.getElementById('new-note-btn') as HTMLButtonElement;
+  const titleInput = document.getElementById('title') as HTMLInputElement;
+  const contentInput = document.getElementById('content') as HTMLTextAreaElement;
+
+  // Mostrar/ocultar formulario
+  newNoteBtn?.addEventListener('click', () => {
+    if (form) {
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      titleInput.value = 'Untitled';
+      contentInput.value = '';
+    }
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .upsert({
+          title: title || 'Untitled',
+          content: content,
+          slug: slug
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Limpiar y ocultar formulario
+      titleInput.value = 'Untitled';
+      contentInput.value = '';
+      form.style.display = 'none';
+      
+      // Navegar a la ruta de la nota
+      window.location.href = `/${data.slug}`;
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al guardar la nota');
+    }
+  });
+</script> 

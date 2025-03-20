@@ -1,11 +1,30 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import { supabase } from '../lib/supabase';
+import Anotador from '../components/Anotador.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const { data: notes, error } = await supabase
+  .from('notes')
+  .select('*')
+  .order('created_at', { ascending: false });
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Anotao - Notas</title>
+  </head>
+  <body>
+    <h1>Mis Notas</h1>
+    
+    <Anotador />
+
+    <div>
+      {notes?.map(note => (
+        <div>
+          <a href={`/${note.slug}`}>{note.title}</a>
+        </div>
+      ))}
+    </div>
+  </body>
+</html>
