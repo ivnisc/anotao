@@ -12,6 +12,11 @@ export async function getStaticPaths() {
     return [];
   }
 
+  if (!notes || notes.length === 0) {
+    console.warn('No hay notas disponibles.');
+    return []; // No hay notas, no se generan rutas
+  }
+
   return notes.map(note => ({
     params: { slug: note.slug },
     props: { note }
