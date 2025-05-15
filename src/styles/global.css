@@ -20,4 +20,187 @@
   .input {
     @apply w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary/50;
   }
+}
+
+:root {
+  --background: #11172a;
+  --text: #626c7d;
+  --highlight: #599692;
+  --bold-text: #dfe5ec;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background-color: var(--background);
+  color: var(--text);
+  font-family: 'Roboto Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+a {
+  color: var(--highlight);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.monkeytype-inspired {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.note-container {
+  width: 800px;
+  max-width: 90%;
+}
+
+.note-title {
+  color: var(--bold-text);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.note-editor {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 1.2rem;
+  width: 100%;
+  min-height: 400px;
+  line-height: 1.6;
+  font-family: 'Roboto Mono', monospace;
+  resize: none;
+}
+
+.note-editor:focus, .note-title:focus {
+  outline: none;
+}
+
+.status-indicator {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-size: 0.8rem;
+  color: var(--highlight);
+  padding: 8px 12px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.status-indicator.visible {
+  opacity: 1;
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background-color: var(--highlight);
+  margin-left: 2px;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Markdown styling */
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3, 
+.markdown-preview h4, .markdown-preview h5, .markdown-preview h6 {
+  color: var(--bold-text);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-preview code {
+  background-color: rgba(89, 150, 146, 0.1);
+  color: var(--highlight);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.markdown-preview pre {
+  background-color: rgba(89, 150, 146, 0.1);
+  padding: 1rem;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.markdown-preview blockquote {
+  border-left: 3px solid var(--highlight);
+  padding-left: 1rem;
+  color: var(--text);
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+.markdown-preview ul, .markdown-preview ol {
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+
+.markdown-preview img {
+  max-width: 100%;
+  margin: 1rem 0;
+}
+
+.markdown-preview hr {
+  border: none;
+  border-top: 1px solid var(--highlight);
+  margin: 1.5rem 0;
+}
+
+.markdown-preview a {
+  color: var(--highlight);
+  text-decoration: none;
+}
+
+.markdown-preview a:hover {
+  text-decoration: underline;
+}
+
+.markdown-preview table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.markdown-preview th, .markdown-preview td {
+  border: 1px solid var(--highlight);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.markdown-preview th {
+  background-color: rgba(89, 150, 146, 0.1);
+  color: var(--bold-text);
 } 

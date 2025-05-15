@@ -1,0 +1,21 @@
+---
+import Anotador from '../../components/Anotador.astro';
+import '../../styles/global.css';
+
+// Marcar esta ruta como renderizada en el servidor en lugar de pre-renderizada
+export const prerender = false;
+
+const { rutId } = Astro.params;
+---
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Anotao - Notas de {rutId}</title>
+    <meta name="description" content="Una aplicación minimalista para tomar notas rápidas para estudiantes" />
+  </head>
+  <body>
+    <Anotador rutId={rutId} />
+  </body>
+</html> 

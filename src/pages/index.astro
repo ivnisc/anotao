@@ -1,30 +1,17 @@
 ---
 import { supabase } from '../lib/supabase';
 import Anotador from '../components/Anotador.astro';
-
-const { data: notes, error } = await supabase
-  .from('notes')
-  .select('*')
-  .order('created_at', { ascending: false });
+import '../styles/global.css';
 ---
 
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Anotao - Notas</title>
+    <title>Anotao - Notas Rápidas</title>
+    <meta name="description" content="Una aplicación minimalista para tomar notas rápidas para estudiantes" />
   </head>
   <body>
-    <h1>Mis Notas</h1>
-    
     <Anotador />
-
-    <div>
-      {notes?.map(note => (
-        <div>
-          <a href={`/${note.slug}`}>{note.title}</a>
-        </div>
-      ))}
-    </div>
   </body>
 </html>

@@ -1,0 +1,42 @@
+---
+interface Props {
+  content: string;
+}
+
+const { content } = Astro.props;
+---
+
+<div id="markdown-preview" class="markdown-preview"></div>
+
+<script>
+  import { marked } from 'marked';
+  
+  // Configurar opciones básicas de marked
+  marked.setOptions({
+    breaks: true, // Permite saltos de línea con un solo retorno de carro
+    gfm: true, // GitHub Flavored Markdown
+  });
+  
+  // Función para actualizar la vista previa
+  function updatePreview(markdown: string): void {
+    const preview = document.getElementById('markdown-preview');
+    if (preview) {
+      // Convertir el markdown a HTML y establecerlo como contenido
+      preview.innerHTML = marked.parse(markdown);
+    }
+  }
+  
+  // Obtener el contenido del editor
+  document.addEventListener('DOMContentLoaded', () => {
+    const editor = document.getElementById('note-editor') as HTMLTextAreaElement;
+    if (editor) {
+      // Actualizar la vista previa cuando cambia el contenido
+      editor.addEventListener('input', () => {
+        updatePreview(editor.value);
+      });
+      
+      // Actualizar la vista previa inicialmente
+      updatePreview(editor.value);
+    }
+  });
+</script> 

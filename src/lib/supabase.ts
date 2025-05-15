@@ -16,4 +16,5 @@ export interface Note {
   created_at: string;
   updated_at: string;
   title: string;
+  rut_id: string | null;
 } 

@@ -12,6 +12,10 @@
     "@astrojs/tailwind": "^6.0.0",
     "@supabase/supabase-js": "^2.49.1",
     "astro": "^5.5.3",
+    "marked": "^9.1.6",
     "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@types/marked": "^5.0.2"
   }
 }

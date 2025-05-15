@@ -1,5 +1,6 @@
 ---
 import { supabase } from '../lib/supabase';
+import MarkdownPreview from './MarkdownPreview.astro';
 
 interface Props {
   note?: {
@@ -8,89 +9,219 @@ interface Props {
     content: string | null;
     slug: string;
   };
+  rutId?: string;
+  noteSlug?: string;
 }
 
-const { note } = Astro.props;
+const { note, rutId, noteSlug } = Astro.props;
 ---
 
-<div>
-  <button id="new-note-btn">Nueva Nota</button>
-
-  <form id="note-form" style="display: none;">
-    <div>
-      <label for="title">Título</label>
-      <input
-        type="text"
-        id="title"
-        name="title"
-        value={note?.title || 'Untitled'}
-        required
+<div class="monkeytype-inspired">
+  <div class="note-container">
+    <div class="edit-controls">
+      <button id="toggle-preview-btn" class="toggle-btn">Vista previa</button>
+    </div>
+    
+    <div id="editor-container" class="editor-container">
+      <input 
+        type="text" 
+        id="note-title" 
+        class="note-title" 
+        value={note?.title || 'Sin título'} 
+        placeholder="Título de la nota"
       />
+      <textarea 
+        id="note-editor" 
+        class="note-editor" 
+        placeholder="Escribe aquí... (acepta markdown)"
+      >{note?.content || ''}</textarea>
     </div>
-
-    <div>
-      <label for="content">Contenido</label>
-      <textarea
-        id="content"
-        name="content"
-        rows="10"
-        required
-      >
-        {note?.content || ''}
-      </textarea>
+    
+    <div id="preview-container" class="preview-container" style="display: none;">
+      <h1 id="preview-title" class="note-title">{note?.title || 'Sin título'}</h1>
+      <MarkdownPreview content={note?.content || ''} />
     </div>
-
-    <button type="submit">
-      {note ? 'Actualizar' : 'Guardar'} Nota
-    </button>
-  </form>
+    
+    <div id="status-indicator" class="status-indicator">Guardado</div>
+  </div>
 </div>
 
+<style>
+  .edit-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+  
+  .toggle-btn {
+    background-color: transparent;
+    color: var(--highlight);
+    border: 1px solid var(--highlight);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+  
+  .toggle-btn:hover {
+    background-color: var(--highlight);
+    color: var(--background);
+  }
+  
+  .editor-container, .preview-container {
+    width: 100%;
+  }
+</style>
+
 <script>
-  const form = document.getElementById('note-form') as HTMLFormElement;
-  const newNoteBtn = document.getElementById('new-note-btn') as HTMLButtonElement;
-  const titleInput = document.getElementById('title') as HTMLInputElement;
-  const contentInput = document.getElementById('content') as HTMLTextAreaElement;
-
-  // Mostrar/ocultar formulario
-  newNoteBtn?.addEventListener('click', () => {
-    if (form) {
-      form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      titleInput.value = 'Untitled';
-      contentInput.value = '';
+  import { marked } from 'marked';
+  
+  // Variables para el auto-guardado
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  const SAVE_DELAY = 1000; // 1 segundo de retraso después de dejar de escribir
+  
+  // Elementos del DOM
+  const titleInput = document.getElementById('note-title') as HTMLInputElement;
+  const editor = document.getElementById('note-editor') as HTMLTextAreaElement;
+  const statusIndicator = document.getElementById('status-indicator') as HTMLDivElement;
+  const togglePreviewBtn = document.getElementById('toggle-preview-btn') as HTMLButtonElement;
+  const editorContainer = document.getElementById('editor-container') as HTMLDivElement;
+  const previewContainer = document.getElementById('preview-container') as HTMLDivElement;
+  const previewTitle = document.getElementById('preview-title') as HTMLHeadingElement;
+  
+  let isPreviewMode = false;
+  
+  // Función para mostrar el indicador de estado
+  function showStatus(message: string) {
+    statusIndicator.textContent = message;
+    statusIndicator.classList.add('visible');
+    
+    setTimeout(() => {
+      statusIndicator.classList.remove('visible');
+    }, 2000);
+  }
+  
+  // Función para alternar entre edición y vista previa
+  function togglePreview() {
+    isPreviewMode = !isPreviewMode;
+    
+    if (isPreviewMode) {
+      // Actualizar el título y el contenido en la vista previa
+      previewTitle.textContent = titleInput.value;
+      
+      // Actualizar el HTML de la vista previa usando marked
+      const markdownPreview = document.getElementById('markdown-preview');
+      if (markdownPreview) {
+        markdownPreview.innerHTML = marked.parse(editor.value);
+      }
+      
+      // Cambiar la visualización
+      editorContainer.style.display = 'none';
+      previewContainer.style.display = 'block';
+      togglePreviewBtn.textContent = 'Editar';
+    } else {
+      // Volver al modo de edición
+      editorContainer.style.display = 'block';
+      previewContainer.style.display = 'none';
+      togglePreviewBtn.textContent = 'Vista previa';
     }
-  });
-
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const title = titleInput.value.trim();
-    const content = contentInput.value.trim();
-    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
+  }
+  
+  // Guardar la nota en Supabase
+  async function saveNote() {
+    const title = titleInput.value.trim() || 'Sin título';
+    const content = editor.value.trim();
+    
+    // Obtener el ID del usuario (RUT) y el identificador de la nota desde la URL
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const rutId = pathSegments[0] || '';
+    let noteSlug = pathSegments[1] || '';
+    
+    // Si no hay slug en la URL, generarlo a partir del título
+    if (!noteSlug) {
+      noteSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+    
     try {
+      const { supabase } = await import('../lib/supabase');
+      
       const { data, error } = await supabase
         .from('notes')
         .upsert({
-          title: title || 'Untitled',
-          content: content,
-          slug: slug
+          title,
+          content,
+          slug: noteSlug,
+          rut_id: rutId // Asumiendo que tienes una columna rut_id en tu tabla
         })
         .select()
         .single();
-
-      if (error) throw error;
-
-      // Limpiar y ocultar formulario
-      titleInput.value = 'Untitled';
-      contentInput.value = '';
-      form.style.display = 'none';
       
-      // Navegar a la ruta de la nota
-      window.location.href = `/${data.slug}`;
+      if (error) throw error;
+      
+      // Actualizar la URL si es una nota nueva (sin recargar la página)
+      if (window.location.pathname === '/' || !window.location.pathname.includes('/')) {
+        window.history.pushState({}, '', `/${rutId}/${noteSlug}`);
+      }
+      
+      showStatus('Guardado');
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error al guardar la nota');
+      console.error('Error al guardar:', error);
+      showStatus('Error al guardar');
+    }
+  }
+  
+  // Aplicar guardado automático con retraso
+  function scheduleAutoSave() {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+    
+    saveTimeout = setTimeout(() => {
+      saveNote();
+    }, SAVE_DELAY);
+  }
+  
+  // Configurar eventos
+  titleInput?.addEventListener('input', () => {
+    scheduleAutoSave();
+  });
+  
+  editor?.addEventListener('input', () => {
+    scheduleAutoSave();
+  });
+  
+  togglePreviewBtn?.addEventListener('click', togglePreview);
+  
+  // Para simular la sensación fluida de escritura al estilo Monkeytype
+  editor?.addEventListener('keydown', (e) => {
+    // Asegurarse de que el cursor se mueva suavemente
+    setTimeout(() => {
+      editor.style.caretColor = 'var(--highlight)';
+    }, 0);
+  });
+  
+  // Guardar cuando el usuario abandona la página
+  window.addEventListener('beforeunload', () => {
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveNote();
     }
   });
+  
+  // Guardar al cargar la página para asegurarse de que tenemos una URL válida
+  document.addEventListener('DOMContentLoaded', () => {
+    // Solo guardamos si hay contenido para evitar crear notas vacías
+    if (titleInput.value.trim() || editor.value.trim()) {
+      saveNote();
+    }
+    
+    // Enfocar automáticamente en el editor
+    setTimeout(() => {
+      editor.focus();
+    }, 100);
+  });
 </script>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">

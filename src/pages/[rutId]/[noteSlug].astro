@@ -1,0 +1,34 @@
+---
+import { supabase } from '../../lib/supabase';
+import Anotador from '../../components/Anotador.astro';
+import '../../styles/global.css';
+
+// Marcar esta ruta como renderizada en el servidor en lugar de pre-renderizada
+export const prerender = false;
+
+const { rutId, noteSlug } = Astro.params;
+
+// Buscar la nota correspondiente en Supabase
+const { data: note, error } = await supabase
+  .from('notes')
+  .select('*')
+  .eq('slug', noteSlug)
+  .eq('rut_id', rutId)
+  .single();
+
+if (error) {
+  console.error('Error al cargar la nota:', error);
+}
+---
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Anotao - {note?.title || 'Nota'}</title>
+    <meta name="description" content="Una aplicación minimalista para tomar notas rápidas para estudiantes" />
+  </head>
+  <body>
+    <Anotador note={note} rutId={rutId} noteSlug={noteSlug} />
+  </body>
+</html> 

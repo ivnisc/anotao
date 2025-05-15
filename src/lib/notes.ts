@@ -1,16 +1,17 @@
 import { supabase } from './supabase';
 import type { Note } from './supabase';
 
-export async function saveNote(title: string, content: string): Promise<Note | null> {
+export async function saveNote(title: string, content: string, rutId?: string): Promise<Note | null> {
   try {
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     
     const { data, error } = await supabase
       .from('notes')
       .upsert({
-        title: title || 'Untitled',
+        title: title || 'Sin título',
         content: content,
-        slug: slug
+        slug: slug,
+        rut_id: rutId || null
       })
       .select()
       .single();

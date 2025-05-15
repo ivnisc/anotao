@@ -1,6 +1,7 @@
 ---
 import { supabase } from '../lib/supabase';
 import Anotador from '../components/Anotador.astro';
+import '../styles/global.css';
 
 export async function getStaticPaths() {
   const { data: notes, error } = await supabase
@@ -14,7 +15,8 @@ export async function getStaticPaths() {
 
   if (!notes || notes.length === 0) {
     console.warn('No hay notas disponibles.');
-    return []; // No hay notas, no se generan rutas
+    // Devolver al menos una ruta para que Astro no se queje
+    return [{ params: { slug: 'default' }, props: { note: null } }];
   }
 
   return notes.map(note => ({
@@ -22,21 +24,18 @@ export async function getStaticPaths() {
     props: { note }
   }));
 }
----
 
-<script>
-  const { note } = Astro.props;
-</script>
+const { note } = Astro.props;
+---
 
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>{note.title}</title>
+    <title>Anotao - {note?.title || 'Nota'}</title>
+    <meta name="description" content="Una aplicación minimalista para tomar notas rápidas para estudiantes" />
   </head>
   <body>
-    <h1>{note.title}</h1>
-    <div>{note.content}</div>
     <Anotador note={note} />
   </body>
 </html>
