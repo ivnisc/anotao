@@ -1,0 +1,131 @@
+<!-- página principal de anotao - landing page con acceso por rut -->
+<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <!-- header de la aplicación -->
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">
+        Anotao
+      </h1>
+      <p class="text-lg text-gray-600 mb-8">
+        Tus notas, siempre disponibles
+      </p>
+      <p class="text-sm text-gray-500">
+        Accede con tu RUT para usar tus notas desde cualquier compu
+      </p>
+    </div>
+  </div>
+  
+<!-- formulario de acceso por rut -->
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
+    <div class="bg-white py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+      <!-- formulario principal que procesa el rut y redirecciona -->
+      <.form for={%{}} action={~p"/acceder"} method="post" class="space-y-6">
+        <div>
+          <label for="rut" class="block text-sm font-medium text-gray-700">
+            RUT
+          </label>
+          <div class="mt-1">
+            <!-- input principal de rut con validación js en tiempo real -->
+            <input
+              id="rut"
+              name="rut"
+              type="text"
+              placeholder="ej: 12.345.678-9"
+              value={assigns[:rut] || ""}
+              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-lg"
+              maxlength="12"
+              autocomplete="off"
+              autocapitalize="off"
+              autocorrect="off"
+              spellcheck="false"
+              oninput="handleRutInput(event)"
+              required
+            />
+          </div>
+          <p class="mt-2 text-xs text-gray-500">
+            Ingresa tu RUT en cualquier formato
+          </p>
+          <!-- mostrar errores de validación de rut -->
+          <%= if @conn.assigns[:flash]["error"] do %>
+            <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-red-700">
+                    {@conn.assigns[:flash]["error"]}
+                  </p>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+          >
+            Acceder a mis notas
+          </button>
+        </div>
+      </.form>
+
+      <div class="mt-8 border-t border-gray-200 pt-6">
+        <div class="text-center">
+          <p class="text-xs text-gray-500 mb-3">
+            Primera vez usando esto?
+          </p>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Olvida el bloc de notas y anota en Anotao.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<!-- enlace a política de datos -->
+  <div class="mt-6 text-center">
+    <a href="/politica-datos" class="text-xs text-blue-500 hover:text-blue-700 underline">
+      ¿Qué pasa con mis datos?
+    </a>
+  </div>
+  
+<!-- footer con links del desarrollador -->
+  <div class="mt-8 text-center">
+    <p class="text-xs text-gray-400">
+      <a href="https://www.linkedin.com/in/ivnisc">@ivnisc </a>• UTFSM •
+      <a href="https://github.com/ivnisc">github</a>
+    </p>
+  </div>
+</div>
+
+<script>
+  // normalización y validación de rut en tiempo real
+  // limpia el input mientras el usuario escribe
+  function handleRutInput(event) {
+    const input = event.target;
+    let value = input.value;
+
+    // eliminar caracteres no válidos - solo números, k y símbolos de rut
+    value = value.replace(/[^0-9kK.\-]/gi, '');
+
+    // convertir k minúscula a mayúscula para dígito verificador
+    value = value.replace(/k/g, 'K');
+
+    // limitar longitud máxima del rut (incluye puntos y guión)
+    if (value.length > 12) {
+      value = value.slice(0, 12);
+    }
+
+    // aplicar valor limpio al input
+    input.value = value;
+  }
+</script>
