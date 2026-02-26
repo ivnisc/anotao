@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: anotao_prod
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: ecto://postgres:postgres@db/anotao_prod
+      SECRET_KEY_BASE: SnVQXRJfdJukikldZkfflSPeajYemrNA2yHryP+YCV8lQTGVvpsN7FciCTGuqong
+      PHX_HOST: localhost
+      PORT: 4000
+    ports:
+      - "4000:4000"
+
+volumes:
+  pgdata:
